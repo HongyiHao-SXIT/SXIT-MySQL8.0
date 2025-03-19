@@ -1,0 +1,216 @@
+第6章 MySQL8.0编程基础
+　　
+　　【例6.1】 使用查询结果给变量赋值。
+　　　
+　　　mysql> use teaching;
+　　　　　　Database changed
+　　　mysql> set @sname=(select sname from student
+　　　　　-> where studentno='20126113307');
+　　　
+　　　mysql> select studentno, sname, birthdate
+　　　　　-> from student where sname=@sname;
+　　
+　　【例6.2】利用select语句将表中数据赋值给变量。 
+　　　
+　　　mysql> select @sname:=sname from student limit 0,1;
+　　
+　　【例6.3】改变MySQL命令的结束标记示例。
+　　　
+　　　mysql> delimiter  //
+　　　mysql> select studentno,sname,phone
+　　　     -> from student where sname like '赵%'//
+　　　
+　　　mysql> delimiter  $$
+　　　mysql> select studentno,sname,birthdate
+　　　    -> from student where sname like '韩%'$$
+　　　
+　　　mysql>  delimiter ;
+　　
+　　【例6.4】在给定了两个直角边的长度时，计算直角三角形的斜边长度。
+　　　
+　　　mysql> prepare hypo_c from 'select sqrt(pow(?,2) + pow(?,2)) AS hypotenuse';
+　　　
+　　　mysql> set @a = 6;
+　　　
+　　　mysql> set @b = 8;
+　　　
+　　　mysql> execute hypo_c using @a, @b;
+　　　
+　　　mysql> deallocate  prepare  hypo_c;
+　　【例6.5】利用预处理SQL语句输出student中的前2行记录的部分数据。
+　　　
+　　　mysql> set @a=2;
+　　　
+　　　mysql> prepare  STMT  
+　　　　　-> from "select studentno,sname,entrance from  student  limit ?";
+　　　
+　　　mysql> execute STMT using @a;
+　　
+　　
+　　　mysql> set @a=3;
+　　　
+　　　mysql> execute STMT using @a;
+　　　
+　　　【例6.6】 创建一个函数，计算长方形面积。
+　　　
+　　　mysql> delimiter //
+　　　mysql> create function rectangle_area(long1 int,wide1 int) returns int
+　　　     -> no sql
+　　　　　-> begin
+　　　     ->   return long1 * wide1;
+　　　     -> end //
+　　　
+　　　mysql> delimiter ;
+　　【例6.7】创建一个名为func_course的函数返回表course中的指定课程号的课程名。
+　　　
+　　　mysql> delimiter &&
+　　　mysql> create  function func_course(c_no varchar(6))
+　　　　　-> returns  char(6)
+　　　　　-> reads sql data 
+　　　　　-> begin
+　　　　　->    return  (select  cname  from  course
+　　　　　->               where  courseno =c_no);
+　　　　　-> end &&
+　　　
+　　　mysql> delimiter ;
+　　
+　　【例6.8】分别调用函数rectangle_area()和func_course
+　　　
+　　　mysql> select rectangle_area(5,4);
+　　　
+　　　mysql> select func_course('c08123');
+　　【例6.9】修改存储函数func_course的定义。将读写权限改为no sql，并加上注释信息“find function name”。
+　　　
+　　　mysql> alter  function  func_course
+　　　     -> no sql 
+　　　     -> comment  'find function name';
+　　　
+　　　mysql> select  SPECIFIC_NAME,SQL_DATA_ACCESS,
+　　　　　-> routine_comment  from  information_schema.Routines
+　　　　　-> where  routine_name='func_course';
+　　　
+　　　【例6.10】创建函数exam_if，通过if…then…else结构首先判断传入参数的值是否为10，如果是则输出1，如果不是则再判断该传入参数的值是否为20，如果是则输出2，当以上条件都不满足时输出3。然后调用函数exam_if。
+　　　
+　　　mysql> delimiter //
+　　　mysql> create function exam_if(x int)
+　　　     -> returns int
+　　　     -> no sql
+　　　　　-> begin
+　　　     -> if x=10 then set x=1;
+　　　     -> elseif x=20 then set x=2;
+　　　     -> else  set x=3;
+　　　     -> end if;
+　　　     -> return x;
+　　　     -> end //
+　　　
+　　　mysql> delimiter ;
+　　　mysql> select exam_if(79);
+　　
+　　【例6.11】创建函数exam_case，通过case语句首先判断传入参数的值是否为10，如果条件成立则输出1，如果条件不成立则再判断该传入参数的值是否为20，如果成立则输出2，当以上条件都不满足时输出3。
+　　　
+　　　mysql> delimiter //
+　　　mysql> create function exam_case( x int)
+　　　　-> returns  int
+　　　　-> no sql
+　　　　-> begin
+　　　　-> case  x
+　　　　-> when 10  then set  x=1;
+　　　　-> when 20  then set  x=2;
+　　　　-> else  set  x=3;
+　　　　-> end case;
+　　　　-> return  x;
+　　　　-> end //
+　　　
+　　　mysql> delimiter ;
+　　　mysql> select exam_case(17);
+　　
+　　【例6.12】从表student中查询学号studentno，入学成绩entrance。成绩大于等于800分，显示“pass!”。否则，显示“bye.”,输出前5条记录。
+　　　
+　　　mysql> select  studentno, entrance,if(entrance >=800,'pass','bye! ')
+　　　　　-> from  student  limit  5;
+　　
+　　【例6.13】定义函数exam_while，应用while语句求1到100项的和。
+　　　
+　　　mysql> delimiter //
+　　　mysql> create  function  exam_while(n int) returns int
+　　　　-> no sql
+　　　　->  begin
+　　　　->  declare sum int default 0; 
+　　　　-> declare m int default 1;
+　　　　->  while  m <= n  do
+　　　　->  set  sum=sum+m;
+　　　　->  set  m=m+1;
+　　　　->  end while;
+　　　　->  return  sum;
+　　　　-> end //
+　　　
+　　　mysql> delimiter ;
+　　　mysql> select exam_while(100);
+　　
+　　【例6.14】定义函数exam_loop，应用loop语句求1~100之和。通过leave语句退出循环并输出结果。
+　　　
+　　　mysql> delimiter //
+　　　mysql> create  function  exam_loop(n int) returns int
+　　　　-> no sql
+　　　　-> begin
+　　　　-> declare  sum int default 0;
+　　　　-> set n=1;
+　　　　-> loop_label:loop
+　　　　-> set sum=sum+n;
+　　　　-> set n=n+1;
+　　　　-> if  n>100  then
+　　　　-> leave  loop_label;
+　　　　-> end if;
+　　　　-> end loop;
+　　　　-> return  sum;
+　　　　-> end //
+　　　
+　　　mysql> delimiter ;
+　　　mysql> select exam_loop(100);
+　　
+　　【例6.15】定义函数exam_iterate，应用while语句和iterate语句求1~100间的偶数之和。通过leave语句退出循环并输出结果。
+　　　
+　　　mysql> delimiter //
+　　　mysql> create  function  exam_iterate(n int) returns int
+　　　　　-> no sql
+　　　　　->  begin
+　　　　　->  declare sum char(20) default 0;
+　　　　　-> declare s int default 0;
+　　　　　-> add_num: while  true  do
+　　　　　-> set s=s+1;
+　　　　　-> if (s%2=0) then
+　　　　　-> set sum=sum+s;
+　　　　　->  else
+　　　　　-> iterate  add_num;
+　　　　　-> end if;
+　　　　　-> if (s=n) then
+　　　　　-> leave  add_num;
+　　　　　->  end if;
+　　　　　->  end while add_num;
+　　　　　-> return  sum;
+　　　　　-> end;
+　　　　　->  //
+　　　
+　　　mysql> delimiter ;
+　　　mysql> select exam_iterate(100);
+　　
+　　【例6.16】定义函数exam_repeat，应用repeat语句求前1~50的和。
+　　　
+　　　mysql> delimiter //
+　　　mysql> create  function  exam_repeat (n int) returns int
+　　　　　-> no sql
+　　　　　-> begin
+　　　　　-> declare sum int default 0;
+　　　　　-> set  n=1;
+　　　　　-> repeat
+　　　　　-> set sum=sum+n;
+　　　　　-> set n=n+1;
+　　　　　-> until n>50
+　　　　　-> end repeat;
+　　　　　-> return sum;
+　　　　　-> end //
+　　　
+　　　mysql> delimiter ;
+　　　mysql> select exam_repeat(50);
+　　
+　　

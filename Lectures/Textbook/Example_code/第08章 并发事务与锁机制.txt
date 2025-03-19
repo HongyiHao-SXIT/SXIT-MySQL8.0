@@ -1,0 +1,123 @@
+第8章 并发事务与锁机制
+　　
+　　【例8.1】变量@@autocommit自动提交模式的修改示例。删除课程号为c05103的表记录，然后回滚。
+
+    mysql> use teaching;
+　　　　　　Database changed
+    mysql> delimiter //
+    mysql> set @@autocommit =0;
+　　　　　-> create procedure  auto_cno()
+　　　　　-> begin
+　　　　　-> start transaction;
+　　　　　-> delete from course where  courseno='c05103';
+　　　　　-> select * from course where  courseno='c05103';
+　　　　　-> rollback;
+　　　　　-> select * from  course where courseno='c05103';
+　　　　　-> end//
+
+    mysql> delimiter ;
+
+    mysql> call auto_cno();
+　　
+　　【例8.2】将course表中课程号为c05103的课程名称改为“高等数学”，并提交该事务。
+
+    mysql> use teaching;
+　　　　　　Database changed
+    mysql> delimiter //
+    mysql> create procedure  update_cno()
+　　　　　-> begin
+　　　　　-> start transaction;
+　　　　　-> update course set cname='高等数学' 
+　　　　　-> where courseno='c05103';
+　　　　　-> commit;
+　　　　　-> select * from  course where courseno='c05103';
+　　　　　-> end//
+
+    mysql> delimiter ;
+
+    mysql> call update_cno();
+　　
+　　【例8.3】使用显式事务向表course中插入两条记录。
+
+    mysql> delimiter //
+    mysql> create procedure insert_cno()
+　　　　　-> begin
+　　　　　-> start transaction;
+　　　　　->   insert into course
+　　　　　->      values('c05141','WIN设计','选修',48,8,8);
+　　　　　->    insert into course
+　　　　　->       values('c05142','WEB语言','选修',32,8,8);
+　　　　　-> select * from  course where term =8;
+　　　　　-> commit;
+　　　　　-> end//
+
+    mysql> delimiter ;
+
+    mysql> call insert_cno();
+　　【例8.4】定义一个事务，向course表中添加一条记录，并设置保存点。然后再删除该记录，并回滚到事务的保存点，提交事务。
+
+    mysql> delimiter //
+    mysql> create procedure  sp_cno()
+　　　　　-> begin
+　　　　　-> start transaction;
+　　　　　-> insert into course
+　　　　　-> values('c05139','建模UML','选修',48,12,7);
+　　　　　-> savepoint spcno1;
+　　　　　-> delete from course
+　　　　　-> where courseno='c05139';
+　　　　　-> rollback work  to  savepoint  spcno1;
+　　　　　-> select * from  course where courseno='c05139';
+　　　　　-> commit ;
+　　　　　-> end//
+
+    mysql> delimiter ;
+
+    mysql> call sp_cno();
+　　
+　　【例8.5】  编写转账业务的存储过程，要求bank表中的账户的当前金额cur_money值不能小于1。
+
+    mysql> use mytest;
+　　　　　　Database changed
+#创建表bank，输入记录并显示
+    mysql> create table bank(
+　　　　　-> cus_no  varchar(8),
+　　　　　-> cus_name  varchar(10),
+　　　　　-> cur_money  decimal(13,2));
+
+    mysql> insert into bank  values('bj101211','张思睿',1000);
+
+    mysql> insert into bank  values('sd101677','李佛',1);
+
+    mysql> select * from bank ;
+
+#创建存储过程trans_bank()
+    mysql> delimiter //
+    mysql> Create procedure  trans_bank()
+　　　　　-> begin
+　　　　　-> declare  money  decimal(13,2);
+　　　　　-> start transaction;
+　　　　　-> update bank  set cur_money=cur_money-1000 where  cus_no='bj101211';
+　　　　　-> update bank  set cur_money=cur_money+1000 where  cus_no='sd101677';
+　　　　　-> select cur_money into money from bank  where  cus_no='bj101211';
+　　　　　-> if  money <1 then
+　　　　　-> begin
+　　　　　-> select ' The transaction fails, the rollback transaction ';
+　　　　　-> rollback;
+　　　　　-> end;
+　　　　　-> else
+　　　　　-> begin
+　　　　　-> select ' A successful transaction,commits the transaction';
+　　　　　-> commit;
+　　　　　-> end;
+　　　　　-> end if;
+　　　　　-> end//
+
+    mysql> delimiter ;
+
+    mysql> call trans_bank();
+　　例如，在score表上设置一个只读锁定。
+    mysql> lock tables score read; 
+　　在course表上设置一个写锁定。
+    mysql> lock tables course write; 
+　　
+　　
