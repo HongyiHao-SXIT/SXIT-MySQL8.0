@@ -2,7 +2,7 @@
 -- Structure of the student table
 create table if not exists student (
     studentno  char(11) not null comment 'Student Number', 
-    sname char(8) not null comment 'Student Name', 
+    sname char(100) not null comment 'Student Name', 
     sex enum('Male', 'Female') default 'Male' comment 'Gender', 
     birthdate date not null comment 'Date of Birth', 
     entrance int(3)  null comment 'Entrance Score',		 
