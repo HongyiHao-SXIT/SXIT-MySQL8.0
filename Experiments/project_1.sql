@@ -1,3 +1,4 @@
+-- Active: 1736786939860@@127.0.0.1@3306@teaching
 CREATE DATABASE teaching
 
     DEFAULT CHARACTER SET utf8mb4
@@ -27,7 +28,7 @@ CREATE TABLE course (
     cname CHAR(6) NOT NULL,
     type CHAR(8) NOT NULL,
     period INT(2) NOT NULL,
-    exp INT(2) NOT NULL,
+    credit INT(2) NOT NULL,
     term INT(2) NOT NULL,
     PRIMARY KEY (courseno)
 );
@@ -75,7 +76,7 @@ VALUES
     ('2023010005', '孙七', '男', '2006-02-28', 600, '13555555555', 'sunqi@example.com');
 
 
-INSERT INTO course (courseno, cname, type, period, exp, term)
+INSERT INTO course (courseno, cname, type, period, credit, term)
 VALUES
     ('c00001', '数学', '必修', 64, 16, 1),
     ('c00002', '语文', '必修', 64, 16, 1),
