@@ -1,4 +1,4 @@
--- Active: 1736786939860@@127.0.0.1@3306@sxit_databases_learning
+-- Active: 1736786939860@@127.0.0.1@3306@teaching
 CREATE TABLE IF NOT EXISTS student (
     studentno CHAR(11) NOT NULL COMMENT '学生学号',
     sname CHAR(8) NOT NULL COMMENT '学生姓名',
