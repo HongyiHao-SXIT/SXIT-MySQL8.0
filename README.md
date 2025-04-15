@@ -6,9 +6,6 @@ This is a repository that contains the content of the **MySql 8.0** course for t
 sxit-MySql 8.0_learning/
 ├── Lectures/   //Class content
 │   ├── Record/     //Class record
-│   │   ├── Date/
-│   │   │   │   ├── MySql8.0_Date_P1.wav   //Part 1 of every class
-│   │   │   │   ├── MySql8.0_Date_P2.wav   //Part 2 of every class
 │   ├── Textbook/   //Code and practice in textbook
 │   │   ├── TABLE_NAME.sql
 ├──Experiment/  //A folder containing classroom experiment code
