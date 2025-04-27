@@ -1,0 +1,6 @@
+# output a random number between 20-90
+SELECT 20+ ROUND(70*RAND(),2);
+
+# 
+SELECT DATE_ADD(NOW(), INTERVAL 3000 minute);
+SELECT DATE_ADD(NOW(), INTERVAL 1000 DAY)
