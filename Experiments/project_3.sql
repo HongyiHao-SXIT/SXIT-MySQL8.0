@@ -1,80 +1,52 @@
+-- 所有课程编号、名称、学分
 SELECT courseno, cname, credit FROM course;
 
-SELECT *FROM student WHERE classno = '160501';
+-- 查询160501班所有学生
+SELECT * FROM student WHERE classno = '160501';
 
-SELECT sname, YEAR(CURRENT_DATE) - YEAR(birthdate) AS age
-FROM student
-WHERE sex = '男' AND YEAR(CURRENT_DATE) - YEAR(birthdate) > 20;
+-- 查询年龄大于20岁的男生
+SELECT sname, TIMESTAMPDIFF(YEAR, birthday, CURDATE()) AS age
+FROM student WHERE sex = '男' AND TIMESTAMPDIFF(YEAR, birthday, CURDATE()) > 20;
 
-SELECT major
-FROM teacher
-WHERE department = '计算机学院';
+-- 计算机学院教师的专业名称（假设为dept字段）
+SELECT DISTINCT depart FROM teacher WHERE depart = '计算机学院';
 
-CREATE TABLE 学生选课统计表 (
-    studentno CHAR(11),
-    course_count INT,
-    total_score DECIMAL(10, 2)
-);
+-- 查询每个学生的课程数、总成绩
+SELECT s.sno, COUNT(*) AS course_count, SUM(finalscore) AS total_score
+FROM score s GROUP BY s.sno;
 
-INSERT INTO 学生选课统计表 (studentno, course_count, total_score)
+-- 排序：班级升序、成绩降序
+SELECT * FROM student ORDER BY classno ASC, point DESC;
+
+-- 查询各班人数
+SELECT classno, COUNT(*) AS num_students FROM student GROUP BY classno;
+
+-- 查询各班成绩最高和最低分
+SELECT classno, MAX(finalscore) AS max_score, MIN(finalscore) AS min_score
+FROM student s JOIN score sc ON s.sno = sc.sno GROUP BY classno;
+
+-- 教授两门及以上的教师
+SELECT tno tname,COUNT(DISTINCT courseno) AS course_count
+FROM teach_class GROUP BY tno HAVING course_count >= 2;
+
+-- 查询课程以c05开头、选课人数≥3且平均分>75
 SELECT 
-    s.studentno,
-    COUNT(sc.courseno) AS course_count,
-    SUM(sc.daily + sc.final) AS total_score
+    s.courseno AS 课程号,
+    COUNT(*) AS 选修人数,
+    AVG(s.final) AS 期末成绩平均分
 FROM 
-    student s
-LEFT JOIN 
-    score sc ON s.studentno = sc.studentno
-GROUP BY 
-    s.studentno;
-
-SELECT *
-FROM student
-ORDER BY classno ASC, entrance DESC;
-
-SELECT classno, COUNT(studentno) AS student_count
-FROM student
-GROUP BY classno;
-
-SELECT 
-    sc.classno,
-    MAX(sc.final) AS max_final_score,
-    MIN(sc.final) AS min_final_score
-FROM 
-    score sc
-JOIN 
-    student s ON sc.studentno = s.studentno
-GROUP BY 
-    sc.classno;
-
-SELECT 
-    t.teacherno,
-    c.courseno,
-    tc.classno
-FROM 
-    teacher t
-JOIN 
-    teach_class tc ON t.teacherno = tc.teacherno
-JOIN 
-    score sc ON tc.classno = sc.studentno 
-    course c ON sc.courseno = c.courseno
-GROUP BY 
-    t.teacherno, c.courseno, tc.classno
-HAVING 
-    COUNT(c.courseno) >= 2;
-
-
-SELECT 
-    sc.courseno,
-    COUNT(DISTINCT sc.studentno) AS student_count,
-    AVG(sc.final) AS average_final_score
-FROM 
-    score sc
+    score s
 WHERE 
-    sc.courseno LIKE 'c05%'
+    s.courseno LIKE 'c05%'  -- 课程编号以c05开头
 GROUP BY 
-    sc.courseno
+    s.courseno
 HAVING 
-    COUNT(DISTINCT sc.studentno) >= 3 AND AVG(sc.final) > 75
+    COUNT(*) >= 3  -- 三名及以上学生选修
+    AND AVG(s.final) > 75  -- 平均分高于75分
 ORDER BY 
-    average_final_score DESC;
+    AVG(s.final) DESC;  -- 按平均分降序排序
+
+
+SELECT s.sno, COUNT(*) AS course_count, SUM(final) AS total_score
+FROM score s
+GROUP BY s.sno;

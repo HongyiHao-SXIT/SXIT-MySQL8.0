@@ -32,17 +32,23 @@ WITH CHECK OPTION;
 GO
 
 -- 在teaching数据库中创建视图v_teacher_course，包含教师编号、教师姓名、职称、课程号、课程名和任课班级，通过视图v_teacher_course将教师编号为t05017的教师职称更改为”副教授”
-CREATE VIEW v_teacher_course
-AS
-SELECT teacher.teacherno, teacher.tname, teacher.prof, course.courseno, course.cname, teach_class.classno
-FROM teacher
-         JOIN teach_class ON teacher.teacherno = teach_class.teacherno
-         JOIN course ON teach_class.courseno = course.courseno;
-GO
+CREATE OR REPLACE VIEW v_teacher_course AS
+SELECT
+    teacher.tno,
+    teacher.tname,
+    teacher.prof,
+    course.courseno,
+    course.cname,
+    teach_class.classno
+FROM
+    teacher
+    JOIN teach_class ON teacher.tno = teach_class.tno
+    JOIN course ON teach_class.courseno = course.courseno;
+
 
 UPDATE v_teacher_course
 SET prof = '副教授'
-WHERE teacherno = 't05017';
+WHERE tno = 't05001';
 GO
 
 -- 用SQL语句删除创建的索引和视图
