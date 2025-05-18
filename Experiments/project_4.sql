@@ -55,24 +55,26 @@ GROUP BY course.courseno, course.cname
 ORDER BY student_count ASC;
 GO
 
-DELIMITER //
 
 -- 创建存储过程
+DELIMITER //
+
 CREATE PROCEDURE ShowStudentCourseScores()
 BEGIN
-    -- 声明变量
+    -- 声明变量（必须放在游标和handler之前）
     DECLARE sname VARCHAR(50);
     DECLARE cname VARCHAR(50);
     DECLARE final_score DECIMAL(5, 2);
+    DECLARE done INT DEFAULT FALSE;
+    
     -- 声明游标
     DECLARE student_cursor CURSOR FOR
-    SELECT student.sname, course.cname, score.final
-    FROM student
-    JOIN score ON student.sno = score.sno
-    JOIN course ON score.courseno = course.courseno;
+        SELECT student.sname, course.cname, score.final
+        FROM student
+        JOIN score ON student.sno = score.sno
+        JOIN course ON score.courseno = course.courseno;
 
     -- 声明处理游标结束的条件
-    DECLARE done INT DEFAULT FALSE;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
     -- 打开游标
